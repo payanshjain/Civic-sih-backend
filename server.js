@@ -7,27 +7,20 @@ const User = require('./models/User');
 
 dotenv.config();
 
-// --- START: CORS Configuration ---
-// Define the allowed origins (your frontend URLs)
+// --- START: SIMPLIFIED CORS Configuration ---
 const allowedOrigins = [
   'https://civicsync-resolve.vercel.app',
   'https://civicsync-resolve-payanshs-projects-d9aeaeda.vercel.app',
   'https://civicsync-resolve-msikgayu9-payanshs-projects-d9aeaeda.vercel.app',
-  'http://localhost:8080' // For local development
+  'http://localhost:8080'
 ];
 
 const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: allowedOrigins,
   credentials: true,
+  optionsSuccessStatus: 200 // For legacy browser compatibility
 };
-// --- END: CORS Configuration ---
+// --- END: SIMPLIFIED CORS Configuration ---
 
 // Admin User Seeding Logic
 const seedAdminUser = async () => {
@@ -57,7 +50,6 @@ const app = express();
 
 // Use the detailed CORS options
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // Enable pre-flight for all routes
 
 app.use(express.json());
 

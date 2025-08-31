@@ -12,6 +12,7 @@ dotenv.config();
 const allowedOrigins = [
   'https://civicsync-resolve.vercel.app',
   'https://civicsync-resolve-payanshs-projects-d9aeaeda.vercel.app',
+  'https://civicsync-resolve-msikgayu9-payanshs-projects-d9aeaeda.vercel.app',
   'http://localhost:8080' // For local development
 ];
 

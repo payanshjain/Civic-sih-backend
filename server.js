@@ -2,13 +2,34 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
-const bcrypt = require('bcryptjs'); 
-const User = require('./models/User'); 
+const bcrypt = require('bcryptjs');
+const User = require('./models/User');
 
 // Load environment variables
 dotenv.config();
 
-// --- START: Admin User Seeding ---
+// --- START: CORS Configuration ---
+// Define the allowed origins (your frontend URLs)
+const allowedOrigins = [
+  'https://civicsync-resolve-ydmd.vercel.app',
+  'http://localhost:8080' // For local development
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  }
+};
+// --- END: CORS Configuration ---
+
+
+// Admin User Seeding Logic (from previous step)
 const seedAdminUser = async () => {
   try {
     const adminEmail = 'om@gmail.com';
@@ -21,31 +42,29 @@ const seedAdminUser = async () => {
 
       await User.create({
         email: adminEmail,
-        phone: '0000000000', // Placeholder phone
+        phone: '0000000000',
         password: hashedPassword,
         role: 'admin',
       });
-      console.log('✅ Admin user created successfully.');
-    } else {
-      console.log('ℹ️ Admin user already exists.');
+      console.log('Admin user created successfully.');
     }
   } catch (error) {
-    console.error('❌ Error seeding admin user:', error);
+    console.error('Error seeding admin user:', error);
   }
 };
-// --- END: Admin User Seeding ---
+
+// Connect to database and then seed admin
+connectDB().then(() => {
+  seedAdminUser();
+});
 
 const app = express();
 
-// --- Middleware ---
-app.use(cors({
-  origin: "https://civicsync-resolve-ydmd.vercel.app", // allow only your frontend
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true,
-}));
-app.use(express.json()); // parse JSON bodies
+// --- MODIFICATION: Use the detailed CORS options ---
+app.use(cors(corsOptions));
+app.use(express.json());
 
-// --- Routes ---
+// Define Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/reports', require('./routes/reports'));
 
@@ -53,15 +72,6 @@ app.get('/', (req, res) => {
   res.send('CivicSync API is running...');
 });
 
-// --- Start Server after DB connection ---
 const PORT = process.env.PORT || 5001;
 
-connectDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`🚀 Server started on port ${PORT}`);
-    seedAdminUser(); // seed admin after DB connection
-  });
-}).catch(err => {
-  console.error('❌ Failed to connect to DB:', err);
-  process.exit(1);
-});
+app.listen(PORT, () => console.log(`Server started on port ${PORT}`));

@@ -5,41 +5,34 @@ const connectDB = require('./config/db');
 const bcrypt = require('bcryptjs');
 const User = require('./models/User');
 
-// Load environment variables
 dotenv.config();
 
 // --- START: CORS Configuration ---
 // Define the allowed origins (your frontend URLs)
 const allowedOrigins = [
-  'https://civicsync-resolve-ydmd.vercel.app',
+  'https://civicsync-resolve-ydmd.vercel.app', // Your deployed frontend
   'http://localhost:8080' // For local development
 ];
 
 const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
     }
-    return callback(null, true);
-  }
+  },
+  credentials: true,
 };
 // --- END: CORS Configuration ---
 
-
-// Admin User Seeding Logic (from previous step)
+// Admin User Seeding Logic
 const seedAdminUser = async () => {
   try {
     const adminEmail = 'om@gmail.com';
-    const adminExists = await User.findOne({ email: adminEmail });
-
-    if (!adminExists) {
-      const password = 'omjain';
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(password, salt);
-
+    if (!(await User.findOne({ email: adminEmail }))) {
+      const hashedPassword = await bcrypt.hash('omjain', 10);
       await User.create({
         email: adminEmail,
         phone: '0000000000',
@@ -60,8 +53,10 @@ connectDB().then(() => {
 
 const app = express();
 
-// --- MODIFICATION: Use the detailed CORS options ---
+// Use the detailed CORS options
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Enable pre-flight for all routes
+
 app.use(express.json());
 
 // Define Routes

@@ -11,7 +11,6 @@ dotenv.config();
 // Define the allowed origins (your frontend URLs)
 const allowedOrigins = [
   'https://civicsync-resolve-ydmd.vercel.app',
-  'https://civicsync-resolve-ydmd-logzoa7i9-payanshs-projects-d9aeaeda.vercel.app',// Your deployed frontend
   'http://localhost:8080' // For local development
 ];
 

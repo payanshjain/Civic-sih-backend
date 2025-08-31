@@ -10,7 +10,8 @@ dotenv.config();
 // --- START: CORS Configuration ---
 // Define the allowed origins (your frontend URLs)
 const allowedOrigins = [
-  'https://civicsync-resolve-ydmd.vercel.app',
+  'https://civicsync-resolve.vercel.app',
+  'https://civicsync-resolve-payanshs-projects-d9aeaeda.vercel.app',
   'http://localhost:8080' // For local development
 ];
 

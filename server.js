@@ -1,66 +1,47 @@
-const express = require('express');
-const dotenv = require('dotenv');
-const cors = require('cors');
-const connectDB = require('./config/db');
 const bcrypt = require('bcryptjs');
 const User = require('./models/User');
 
-dotenv.config();
-
-// --- START: SIMPLIFIED CORS Configuration ---
-const allowedOrigins = [
-  'https://civicsync-resolve.vercel.app',
-  'https://civicsync-resolve-payanshs-projects-d9aeaeda.vercel.app',
-  'https://civicsync-resolve-msikgayu9-payanshs-projects-d9aeaeda.vercel.app',
-  'http://localhost:8080'
-];
-
-const corsOptions = {
-  origin: allowedOrigins,
-  credentials: true,
-  optionsSuccessStatus: 200 // For legacy browser compatibility
-};
-// --- END: SIMPLIFIED CORS Configuration ---
-
-// Admin User Seeding Logic
-const seedAdminUser = async () => {
-  try {
-    const adminEmail = 'om@gmail.com';
-    if (!(await User.findOne({ email: adminEmail }))) {
-      const hashedPassword = await bcrypt.hash('omjain', 10);
-      await User.create({
-        email: adminEmail,
-        phone: '0000000000',
-        password: hashedPassword,
-        role: 'admin',
-      });
-      console.log('Admin user created successfully.');
-    }
-  } catch (error) {
-    console.error('Error seeding admin user:', error);
-  }
-};
-
-// Connect to database and then seed admin
-connectDB().then(() => {
-  seedAdminUser();
-});
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const connectDB = require('./config/db'); // Adjust path to your DB config
 
 const app = express();
 
-// Use the detailed CORS options
-app.use(cors(corsOptions));
+// Connect to database
+connectDB();
 
+// Middleware
+app.use(cors({
+  origin: 'http://localhost:8080', // Your frontend URL
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Define Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/reports', require('./routes/reports'));
+// Import and use routes - THIS IS CRITICAL
+const authRoutes = require('./routes/auth');
 
+const reportsRoutes = require('./routes/reports');
+app.use('/auth', authRoutes);
+app.use('/reports', reportsRoutes); 
+
+// Test route to verify server is working
 app.get('/', (req, res) => {
-  res.send('CivicSync API is running...');
+  res.json({ message: 'Server is running!' });
+});
+
+// 404 handler for debugging
+app.use('*', (req, res) => {
+  console.log(`404 - Route not found: ${req.method} ${req.originalUrl}`);
+  res.status(404).json({ message: `Route ${req.method} ${req.originalUrl} not found` });
 });
 
 const PORT = process.env.PORT || 5001;
+app.listen(PORT, () => {
+  console.log(`Server started on port ${PORT}`);
+});
 
-app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+// Removed duplicate code that redeclares "app" and its associated routes and server listen

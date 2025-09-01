@@ -13,11 +13,12 @@ connectDB();
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:8080', // Your frontend URL
+  origin: ['http://localhost:8080', 'https://civicsync-resolve.vercel.app' , 'https://civicsync-resolve-payanshs-projects-d9aeaeda.vercel.app'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
